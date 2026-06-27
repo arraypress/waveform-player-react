@@ -81,6 +81,7 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.samples !== undefined) opts.samples = props.samples;
 	if (props.barWidth !== undefined) opts.barWidth = props.barWidth;
 	if (props.barSpacing !== undefined) opts.barSpacing = props.barSpacing;
+	if (props.barRadius !== undefined) opts.barRadius = props.barRadius;
 	if (props.waveform !== undefined && props.waveform !== null) {
 		opts.waveform = props.waveform;
 	}
@@ -235,6 +236,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.samples,
 			props.barWidth,
 			props.barSpacing,
+			props.barRadius,
 			props.waveform,
 			props.colorPreset,
 			props.waveformColor,

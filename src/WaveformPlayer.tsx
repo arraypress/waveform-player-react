@@ -74,8 +74,9 @@ import type { WaveformPlayerHandle, WaveformPlayerProps } from './types';
 function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown> {
 	const opts: Record<string, unknown> = {};
 
-	/* Audio source */
+	/* Audio source — `src` is the core's shorthand alias for `url`. */
 	if (props.url !== undefined) opts.url = props.url;
+	else if (props.src !== undefined) opts.url = props.src;
 	if (props.audioMode !== undefined) opts.audioMode = props.audioMode;
 	if (props.preload !== undefined) opts.preload = props.preload;
 
@@ -117,6 +118,9 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	/* Accessibility */
 	if (props.accessibleSeek !== undefined) opts.accessibleSeek = props.accessibleSeek;
 	if (props.seekLabel !== undefined) opts.seekLabel = props.seekLabel;
+
+	/* Error UI */
+	if (props.errorText !== undefined) opts.errorText = props.errorText;
 
 	/* Markers */
 	if (props.markers !== undefined) opts.markers = props.markers;
@@ -287,6 +291,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [
 			props.url,
+			props.src,
 			props.audioMode,
 			props.preload,
 			props.waveformStyle,
@@ -316,6 +321,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.buttonAlign,
 			props.accessibleSeek,
 			props.seekLabel,
+			props.errorText,
 			props.markers,
 			props.showMarkers,
 			props.title,

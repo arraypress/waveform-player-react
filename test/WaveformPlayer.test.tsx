@@ -422,3 +422,23 @@ describe('<WaveformPlayer> — imperative ref', () => {
 		expect(ref.current?.instance).toBeTruthy();
 	});
 });
+
+describe('<WaveformPlayer> — src alias + errorText parity', () => {
+	it('maps the `src` shorthand to the library `url` option', async () => {
+		render(<WaveformPlayer src="/audio/alias.mp3" />);
+		await waitForMount();
+		expect(ctorCalls[0].opts.url).toBe('/audio/alias.mp3');
+	});
+
+	it('prefers canonical `url` over `src` when both are passed', async () => {
+		render(<WaveformPlayer url="/audio/canonical.mp3" src="/audio/alias.mp3" />);
+		await waitForMount();
+		expect(ctorCalls[0].opts.url).toBe('/audio/canonical.mp3');
+	});
+
+	it('forwards errorText to the library options', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" errorText="Could not load" />);
+		await waitForMount();
+		expect(ctorCalls[0].opts.errorText).toBe('Could not load');
+	});
+});

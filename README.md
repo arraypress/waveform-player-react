@@ -35,8 +35,13 @@ The wrapper does **not** import the CSS for you — your bundler should own that
 ### Basic
 
 ```tsx
-<WaveformPlayer url="/audio/track.mp3" />
+<WaveformPlayer src="/audio/track.mp3" />
 ```
+
+> **Naming note.** `src` is shorthand for `url`. The visual style is `waveformStyle`
+> — **not** `style`, which (as in any React component) is the host element's CSS
+> object. So `style={{ minHeight: 64 }}` styles the container; `waveformStyle="bars"`
+> picks the waveform look.
 
 ### With metadata + chosen style
 
@@ -145,7 +150,8 @@ Every library option surfaces as a typed prop. See the full table in [`src/types
 
 | Prop        | Type                                  | Default      |
 | ----------- | ------------------------------------- | ------------ |
-| `url`       | `string` *(required)*                 | —            |
+| `url`       | `string`                              | —            |
+| `src`       | `string` — shorthand alias for `url` (`url` wins if both set) | — |
 | `audioMode` | `'self' \| 'external'`                | `'self'`     |
 | `preload`   | `'auto' \| 'metadata' \| 'none'`      | `'metadata'` |
 
@@ -190,6 +196,9 @@ All optional. `colorPreset` controls the auto theme; any individual colour wins 
 | `singlePlay`        | `boolean`                                  | `true`                               |
 | `playOnSeek`        | `boolean`                                  | `true`                               |
 | `enableMediaSession`| `boolean`                                  | `true`                               |
+| `accessibleSeek`    | `boolean`                                  | `true`                               |
+| `seekLabel`         | `string`                                   | —                                    |
+| `errorText`         | `string`                                   | `'Unable to load audio'`             |
 
 ### Markers + metadata
 

@@ -116,12 +116,15 @@ export interface WaveformPlayerHandle {
 export interface WaveformPlayerProps
 	extends Omit<
 		WaveformPlayerOptions,
-		'url' | 'onLoad' | 'onPlay' | 'onPause' | 'onEnd' | 'onError' | 'onTimeUpdate'
+		'url' | 'style' | 'onLoad' | 'onPlay' | 'onPause' | 'onEnd' | 'onError' | 'onTimeUpdate'
 	> {
 	// ── Audio source ───────────────────────────────────────────────────
 
-	/** Audio file URL. Required. */
-	url: string;
+	/**
+	 * Audio file URL. Optional only because the core's `src` shorthand is
+	 * an accepted alias — provide one of `url` or `src`.
+	 */
+	url?: string;
 
 	// ── React-specific callbacks ───────────────────────────────────────
 

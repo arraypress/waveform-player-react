@@ -238,7 +238,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 
 					if (typeof WaveformPlayerClass !== 'function') {
 						console.error(
-							'[waveform-player-react] Failed to resolve WaveformPlayer constructor from module.'
+							'[WaveformPlayerReact] Failed to resolve WaveformPlayer constructor from module.'
 						);
 						return;
 					}
@@ -264,7 +264,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 					instanceRef.current = localInstance;
 				})
 				.catch((err) => {
-					console.error('[waveform-player-react] Failed to load library:', err);
+					console.error('[WaveformPlayerReact] Failed to load library:', err);
 				});
 
 			return () => {
@@ -274,7 +274,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 					try {
 						current.destroy();
 					} catch (err) {
-						console.warn('[waveform-player-react] destroy() threw:', err);
+						console.warn('[WaveformPlayerReact] destroy() threw:', err);
 					}
 				}
 				instanceRef.current = null;

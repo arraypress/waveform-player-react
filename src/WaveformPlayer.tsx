@@ -57,6 +57,9 @@ import {
 	useRef,
 	type ForwardedRef,
 } from 'react';
+// Aliased to avoid colliding with this file's own `WaveformPlayer`
+// component export. This is the core library's player class type.
+import type { WaveformPlayer as WaveformPlayerInstance } from '@arraypress/waveform-player';
 import type { WaveformPlayerHandle, WaveformPlayerProps } from './types';
 
 /**
@@ -110,6 +113,10 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.showHoverTime !== undefined) opts.showHoverTime = props.showHoverTime;
 	if (props.showBPM !== undefined) opts.showBPM = props.showBPM;
 	if (props.buttonAlign !== undefined) opts.buttonAlign = props.buttonAlign;
+
+	/* Accessibility */
+	if (props.accessibleSeek !== undefined) opts.accessibleSeek = props.accessibleSeek;
+	if (props.seekLabel !== undefined) opts.seekLabel = props.seekLabel;
 
 	/* Markers */
 	if (props.markers !== undefined) opts.markers = props.markers;
@@ -244,13 +251,13 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 					 * handler from `callbacksRef` — fixing the stale-closure
 					 * bug without re-mounting on callback changes. Signatures
 					 * mirror the core's option callbacks exactly. */
-					opts.onLoad = (instance: unknown) => callbacksRef.current.onLoad?.(instance);
-					opts.onPlay = (instance: unknown) => callbacksRef.current.onPlay?.(instance);
-					opts.onPause = (instance: unknown) => callbacksRef.current.onPause?.(instance);
-					opts.onEnd = (instance: unknown) => callbacksRef.current.onEnd?.(instance);
-					opts.onTimeUpdate = (currentTime: number, duration: number, instance: unknown) =>
+					opts.onLoad = (instance: WaveformPlayerInstance) => callbacksRef.current.onLoad?.(instance);
+					opts.onPlay = (instance: WaveformPlayerInstance) => callbacksRef.current.onPlay?.(instance);
+					opts.onPause = (instance: WaveformPlayerInstance) => callbacksRef.current.onPause?.(instance);
+					opts.onEnd = (instance: WaveformPlayerInstance) => callbacksRef.current.onEnd?.(instance);
+					opts.onTimeUpdate = (currentTime: number, duration: number, instance: WaveformPlayerInstance) =>
 						callbacksRef.current.onTimeUpdate?.(currentTime, duration, instance);
-					opts.onError = (error: Error, instance: unknown) =>
+					opts.onError = (error: Error, instance: WaveformPlayerInstance) =>
 						callbacksRef.current.onError?.(error, instance);
 
 					localInstance = new WaveformPlayerClass(container, opts);
@@ -307,6 +314,8 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.showHoverTime,
 			props.showBPM,
 			props.buttonAlign,
+			props.accessibleSeek,
+			props.seekLabel,
 			props.markers,
 			props.showMarkers,
 			props.title,
@@ -381,7 +390,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 					await inst.loadTrack(url, title, subtitle, options);
 				},
 				get instance() {
-					return instanceRef.current;
+					return instanceRef.current as WaveformPlayerInstance;
 				},
 			}),
 			[]

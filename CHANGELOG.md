@@ -5,6 +5,38 @@ All notable changes to `@arraypress/waveform-player-react` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Public types are now adopted from the core
+  `@arraypress/waveform-player` (v1.8.0+), which ships a hand-authored
+  `index.d.ts`. The shared option surface (`WaveformStyle`,
+  `ColorPreset`, `AudioMode`, `AudioPreload`, `ButtonAlign`,
+  `WaveformMarker`, `WaveformPeaks`) is re-exported from the core, and
+  `WaveformPlayerProps` now `extends` the core's `WaveformPlayerOptions`
+  instead of re-declaring every field. The core is the single source of
+  truth, so the wrapper's types can no longer drift out of sync. Bumped
+  the `@arraypress/waveform-player` peer (and dev) dependency to
+  `^1.8.0`.
+- Callback props (`onLoad`, `onPlay`, `onPause`, `onEnd`,
+  `onTimeUpdate`, `onError`) and the `WaveformPlayerHandle.instance`
+  accessor are now typed with the core's `WaveformPlayer` class instead
+  of `unknown`.
+
+### Added
+
+- `accessibleSeek`, `seekLabel`, `barRadius`, and gradient-array
+  waveform / progress colours (`string[]`) are now exposed as typed
+  props — picked up for free by extending the core options and wired
+  through to the underlying player.
+
+### Removed
+
+- Deleted `src/core-module-shim.d.ts`, the loose ambient
+  `declare module '@arraypress/waveform-player'` shim that only existed
+  while the core had no shipped types.
+
 ## [0.1.1] — 2026-06-27
 
 ### Changed

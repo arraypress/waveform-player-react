@@ -53,6 +53,7 @@ import {
 	forwardRef,
 	useEffect,
 	useImperativeHandle,
+	useLayoutEffect,
 	useRef,
 	type ForwardedRef,
 } from 'react';
@@ -130,15 +131,12 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.playIcon !== undefined) opts.playIcon = props.playIcon;
 	if (props.pauseIcon !== undefined) opts.pauseIcon = props.pauseIcon;
 
-	/* Callbacks — wired into the library's option-level callbacks
-	 *  rather than custom-event listeners. The library invokes
-	 *  these synchronously on the respective state change. */
-	if (props.onLoad) opts.onLoad = props.onLoad;
-	if (props.onPlay) opts.onPlay = props.onPlay;
-	if (props.onPause) opts.onPause = props.onPause;
-	if (props.onEnd) opts.onEnd = props.onEnd;
-	if (props.onTimeUpdate) opts.onTimeUpdate = props.onTimeUpdate;
-	if (props.onError) opts.onError = props.onError;
+	/* Callbacks are intentionally NOT mapped here. They are wired in
+	 * the mount effect as *stable* wrapper functions that read the
+	 * latest handlers from `callbacksRef` at call time. That way a
+	 * parent re-render passing fresh inline callbacks is always seen
+	 * by the core without re-creating the player — and the callbacks
+	 * never capture stale first-mount state (stale-closure bug). */
 
 	return opts;
 }
@@ -164,6 +162,43 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 	function WaveformPlayer(props, ref: ForwardedRef<WaveformPlayerHandle>) {
 		const containerRef = useRef<HTMLDivElement | null>(null);
 		const instanceRef = useRef<unknown>(null);
+
+		/**
+		 * Latest user callbacks, kept in a ref so the wrappers handed to
+		 * the core (built once at mount, below) always invoke the most
+		 * recent handler instead of the ones captured on first mount.
+		 *
+		 * Initialised from this render's props and refreshed every render
+		 * by the layout effect underneath — never listed in the mount
+		 * effect's deps, so updating a callback does NOT tear the player
+		 * down.
+		 */
+		const callbacksRef = useRef<
+			Pick<
+				WaveformPlayerProps,
+				'onLoad' | 'onPlay' | 'onPause' | 'onEnd' | 'onTimeUpdate' | 'onError'
+			>
+		>({
+			onLoad: props.onLoad,
+			onPlay: props.onPlay,
+			onPause: props.onPause,
+			onEnd: props.onEnd,
+			onTimeUpdate: props.onTimeUpdate,
+			onError: props.onError,
+		});
+
+		/* Refresh the ref on every render (before paint) so the stable
+		 * wrappers below always read the latest handlers. */
+		useLayoutEffect(() => {
+			callbacksRef.current = {
+				onLoad: props.onLoad,
+				onPlay: props.onPlay,
+				onPause: props.onPause,
+				onEnd: props.onEnd,
+				onTimeUpdate: props.onTimeUpdate,
+				onError: props.onError,
+			};
+		});
 
 		/**
 		 * Mount / re-mount lifecycle.
@@ -202,6 +237,22 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 					}
 
 					const opts = buildLibraryOptions(props);
+
+					/* Stable callback wrappers. Created once per player
+					 * instance and never change identity, so the core holds a
+					 * fixed reference, yet each call reads the *current*
+					 * handler from `callbacksRef` — fixing the stale-closure
+					 * bug without re-mounting on callback changes. Signatures
+					 * mirror the core's option callbacks exactly. */
+					opts.onLoad = (instance: unknown) => callbacksRef.current.onLoad?.(instance);
+					opts.onPlay = (instance: unknown) => callbacksRef.current.onPlay?.(instance);
+					opts.onPause = (instance: unknown) => callbacksRef.current.onPause?.(instance);
+					opts.onEnd = (instance: unknown) => callbacksRef.current.onEnd?.(instance);
+					opts.onTimeUpdate = (currentTime: number, duration: number, instance: unknown) =>
+						callbacksRef.current.onTimeUpdate?.(currentTime, duration, instance);
+					opts.onError = (error: Error, instance: unknown) =>
+						callbacksRef.current.onError?.(error, instance);
+
 					localInstance = new WaveformPlayerClass(container, opts);
 					instanceRef.current = localInstance;
 				})

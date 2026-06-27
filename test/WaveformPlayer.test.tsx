@@ -222,7 +222,7 @@ describe('<WaveformPlayer> — option pass-through', () => {
 		expect(ctorCalls[0].opts.waveform).toBe('/peaks/track.json');
 	});
 
-	it('passes callback props through to the library options', async () => {
+	it('wires stable callback wrappers that invoke the current handlers', async () => {
 		const onLoad = vi.fn();
 		const onPlay = vi.fn();
 		const onPause = vi.fn();
@@ -242,14 +242,64 @@ describe('<WaveformPlayer> — option pass-through', () => {
 			/>
 		);
 		await waitForMount();
-		const { opts } = ctorCalls[0];
+		const { opts, stub } = ctorCalls[0];
 
-		expect(opts.onLoad).toBe(onLoad);
-		expect(opts.onPlay).toBe(onPlay);
-		expect(opts.onPause).toBe(onPause);
-		expect(opts.onTimeUpdate).toBe(onTimeUpdate);
-		expect(opts.onEnd).toBe(onEnd);
-		expect(opts.onError).toBe(onError);
+		// The core receives wrapper functions (not the raw handlers), so
+		// new inline callbacks on re-render don't change the reference the
+		// core holds.
+		expect(typeof opts.onLoad).toBe('function');
+		expect(opts.onLoad).not.toBe(onLoad);
+
+		// Calling each wrapper invokes the current handler with the same
+		// arguments the core would pass.
+		const err = new Error('boom');
+		(opts.onLoad as (i: unknown) => void)(stub);
+		(opts.onPlay as (i: unknown) => void)(stub);
+		(opts.onPause as (i: unknown) => void)(stub);
+		(opts.onEnd as (i: unknown) => void)(stub);
+		(opts.onTimeUpdate as (c: number, d: number, i: unknown) => void)(12, 34, stub);
+		(opts.onError as (e: Error, i: unknown) => void)(err, stub);
+
+		expect(onLoad).toHaveBeenCalledWith(stub);
+		expect(onPlay).toHaveBeenCalledWith(stub);
+		expect(onPause).toHaveBeenCalledWith(stub);
+		expect(onEnd).toHaveBeenCalledWith(stub);
+		expect(onTimeUpdate).toHaveBeenCalledWith(12, 34, stub);
+		expect(onError).toHaveBeenCalledWith(err, stub);
+	});
+
+	it('wrapper survives a missing handler (optional callbacks are no-ops)', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" />);
+		await waitForMount();
+		const { opts, stub } = ctorCalls[0];
+
+		// Even with no handlers supplied, the core always gets callable
+		// wrappers — invoking them must not throw.
+		expect(typeof opts.onPlay).toBe('function');
+		expect(() => (opts.onPlay as (i: unknown) => void)(stub)).not.toThrow();
+		expect(() =>
+			(opts.onTimeUpdate as (c: number, d: number, i: unknown) => void)(0, 0, stub)
+		).not.toThrow();
+	});
+
+	it('calls the LATEST callback after a re-render (no stale closure)', async () => {
+		const onPlay1 = vi.fn();
+		const { rerender } = render(<WaveformPlayer url="/audio/a.mp3" onPlay={onPlay1} />);
+		await waitForMount();
+		expect(ctorCalls).toHaveLength(1);
+
+		// Re-render with a fresh handler — the player must NOT re-mount…
+		const onPlay2 = vi.fn();
+		rerender(<WaveformPlayer url="/audio/a.mp3" onPlay={onPlay2} />);
+		await new Promise<void>((resolve) => setTimeout(resolve, 50));
+		expect(ctorCalls).toHaveLength(1);
+
+		// …yet the wrapper the core still holds now routes to onPlay2.
+		const { opts, stub } = ctorCalls[0];
+		(opts.onPlay as (i: unknown) => void)(stub);
+
+		expect(onPlay2).toHaveBeenCalledWith(stub);
+		expect(onPlay1).not.toHaveBeenCalled();
 	});
 });
 

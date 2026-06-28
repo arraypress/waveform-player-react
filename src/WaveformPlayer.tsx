@@ -113,7 +113,10 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.showTime !== undefined) opts.showTime = props.showTime;
 	if (props.showHoverTime !== undefined) opts.showHoverTime = props.showHoverTime;
 	if (props.showBPM !== undefined) opts.showBPM = props.showBPM;
+	if (props.bpm !== undefined) opts.bpm = props.bpm;
 	if (props.buttonAlign !== undefined) opts.buttonAlign = props.buttonAlign;
+	if (props.layout !== undefined) opts.layout = props.layout;
+	if (props.buttonStyle !== undefined) opts.buttonStyle = props.buttonStyle;
 
 	/* Accessibility */
 	if (props.accessibleSeek !== undefined) opts.accessibleSeek = props.accessibleSeek;

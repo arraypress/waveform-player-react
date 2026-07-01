@@ -159,7 +159,7 @@ describe('<WaveformPlayer> — option pass-through', () => {
 				showBPM
 				buttonAlign="center"
 				title="Title"
-				subtitle="Subtitle"
+				artist="Artist"
 				artwork="/img.jpg"
 				album="Album"
 				autoplay={false}
@@ -186,7 +186,7 @@ describe('<WaveformPlayer> — option pass-through', () => {
 		expect(opts.showBPM).toBe(true);
 		expect(opts.buttonAlign).toBe('center');
 		expect(opts.title).toBe('Title');
-		expect(opts.subtitle).toBe('Subtitle');
+		expect(opts.artist).toBe('Artist');
 		expect(opts.artwork).toBe('/img.jpg');
 		expect(opts.album).toBe('Album');
 		expect(opts.autoplay).toBe(false);
@@ -396,7 +396,7 @@ describe('<WaveformPlayer> — imperative ref', () => {
 		expect(stub.setPlayingState).toHaveBeenCalledWith(true);
 	});
 
-	it('forwards loadTrack with title / subtitle / options', async () => {
+	it('forwards loadTrack with title / artist / options', async () => {
 		const ref = createRef<WaveformPlayerHandle>();
 		render(<WaveformPlayer ref={ref} url="/audio/a.mp3" />);
 		await waitForMount();

@@ -132,7 +132,7 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 
 	/* Content metadata */
 	if (props.title !== undefined) opts.title = props.title;
-	if (props.subtitle !== undefined) opts.subtitle = props.subtitle;
+	if (props.artist !== undefined) opts.artist = props.artist;
 	if (props.artwork !== undefined) opts.artwork = props.artwork;
 	if (props.album !== undefined) opts.album = props.album;
 
@@ -330,7 +330,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.markers,
 			props.showMarkers,
 			props.title,
-			props.subtitle,
+			props.artist,
 			props.artwork,
 			props.album,
 			props.autoplay,
@@ -388,7 +388,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 					} | null;
 					inst?.setProgress?.(currentTime, duration);
 				},
-				async loadTrack(url, title, subtitle, options) {
+				async loadTrack(url, title, artist, options) {
 					const inst = instanceRef.current as {
 						loadTrack?: (
 							u: string,
@@ -398,7 +398,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 						) => Promise<void>;
 					} | null;
 					if (!inst?.loadTrack) return;
-					await inst.loadTrack(url, title, subtitle, options);
+					await inst.loadTrack(url, title, artist, options);
 				},
 				get instance() {
 					return instanceRef.current as WaveformPlayerInstance;

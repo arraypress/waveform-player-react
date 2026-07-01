@@ -88,7 +88,7 @@ export interface WaveformPlayerHandle {
 	loadTrack(
 		url: string,
 		title?: string,
-		subtitle?: string,
+		artist?: string,
 		options?: Record<string, unknown>
 	): Promise<void>;
 	/**

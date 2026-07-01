@@ -49,7 +49,7 @@ The wrapper does **not** import the CSS for you — your bundler should own that
 <WaveformPlayer
   url="/audio/track.mp3"
   title="Midnight Dreams"
-  subtitle="The Wavelength"
+  artist="The Wavelength"
   artwork="/img/cover.jpg"
   waveformStyle="bars"
   barWidth={3}
@@ -207,7 +207,7 @@ All optional. `colorPreset` controls the auto theme; any individual colour wins 
 | `markers`     | `Array<{ time: number; label: string; color?: string }>`   |
 | `showMarkers` | `boolean`                                                  |
 | `title`       | `string`                                                   |
-| `subtitle`    | `string`                                                   |
+| `artist`      | `string`                                                   |
 | `artwork`     | `string`                                                   |
 | `album`       | `string`                                                   |
 

@@ -34,7 +34,7 @@ export function FullMetadataExample() {
 		<WaveformPlayer
 			url="/audio/track.mp3"
 			title="Midnight Dreams"
-			subtitle="The Wavelength"
+			artist="The Wavelength"
 			artwork="/img/cover.jpg"
 			waveformStyle="bars"
 			barWidth={3}
@@ -70,7 +70,7 @@ export function MarkersExample() {
 		<WaveformPlayer
 			url="/audio/podcast.mp3"
 			title="Episode 42"
-			subtitle="with Guest"
+			artist="with Guest"
 			markers={markers}
 			height={80}
 		/>

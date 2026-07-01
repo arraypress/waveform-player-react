@@ -175,10 +175,10 @@ All optional. `colorPreset` controls the auto theme; any individual colour wins 
 | `colorPreset`         | `'dark' \| 'light' \| null`     |
 | `waveformColor`       | `string`                        |
 | `progressColor`       | `string`                        |
-| `buttonColor`         | `string`                        |
-| `buttonHoverColor`    | `string`                        |
-| `textColor`           | `string`                        |
-| `textSecondaryColor`  | `string`                        |
+
+The DOM chrome (button, title, meta text) is themed via CSS variables —
+`--wfp-button-color`, `--wfp-text-color`, `--wfp-text-secondary-color` —
+not JS props; override them in your own CSS.
 
 ### Playback / UI / behaviour
 

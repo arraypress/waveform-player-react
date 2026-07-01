@@ -95,12 +95,6 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.colorPreset !== undefined) opts.colorPreset = props.colorPreset;
 	if (props.waveformColor !== undefined) opts.waveformColor = props.waveformColor;
 	if (props.progressColor !== undefined) opts.progressColor = props.progressColor;
-	if (props.buttonColor !== undefined) opts.buttonColor = props.buttonColor;
-	if (props.buttonHoverColor !== undefined) opts.buttonHoverColor = props.buttonHoverColor;
-	if (props.textColor !== undefined) opts.textColor = props.textColor;
-	if (props.textSecondaryColor !== undefined) opts.textSecondaryColor = props.textSecondaryColor;
-	if (props.backgroundColor !== undefined) opts.backgroundColor = props.backgroundColor;
-	if (props.borderColor !== undefined) opts.borderColor = props.borderColor;
 
 	/* Playback controls */
 	if (props.playbackRate !== undefined) opts.playbackRate = props.playbackRate;
@@ -308,12 +302,6 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.colorPreset,
 			props.waveformColor,
 			props.progressColor,
-			props.buttonColor,
-			props.buttonHoverColor,
-			props.textColor,
-			props.textSecondaryColor,
-			props.backgroundColor,
-			props.borderColor,
 			props.playbackRate,
 			props.showPlaybackSpeed,
 			props.playbackRates,

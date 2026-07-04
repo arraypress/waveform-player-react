@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-05
+
+### Added
+
+- Forward the core player's new localizable UI-string options —
+  `seekValueText`, `playPauseLabel`, `speedLabel`, `artworkAlt`, and
+  `unknownTrackText` — through to the underlying player. Requires
+  `@arraypress/waveform-player@^1.20.0`.
+
 ### Changed
 
 - Public types are now adopted from the core

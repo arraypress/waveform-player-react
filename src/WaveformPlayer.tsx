@@ -116,6 +116,9 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	/* Accessibility */
 	if (props.accessibleSeek !== undefined) opts.accessibleSeek = props.accessibleSeek;
 	if (props.seekLabel !== undefined) opts.seekLabel = props.seekLabel;
+	if (props.seekValueText !== undefined) opts.seekValueText = props.seekValueText;
+	if (props.playPauseLabel !== undefined) opts.playPauseLabel = props.playPauseLabel;
+	if (props.speedLabel !== undefined) opts.speedLabel = props.speedLabel;
 
 	/* Error UI */
 	if (props.errorText !== undefined) opts.errorText = props.errorText;
@@ -128,7 +131,9 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.title !== undefined) opts.title = props.title;
 	if (props.artist !== undefined) opts.artist = props.artist;
 	if (props.artwork !== undefined) opts.artwork = props.artwork;
+	if (props.artworkAlt !== undefined) opts.artworkAlt = props.artworkAlt;
 	if (props.album !== undefined) opts.album = props.album;
+	if (props.unknownTrackText !== undefined) opts.unknownTrackText = props.unknownTrackText;
 
 	/* Behaviour */
 	if (props.autoplay !== undefined) opts.autoplay = props.autoplay;
@@ -314,13 +319,18 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.buttonSize,
 			props.accessibleSeek,
 			props.seekLabel,
+			props.seekValueText,
+			props.playPauseLabel,
+			props.speedLabel,
 			props.errorText,
 			props.markers,
 			props.showMarkers,
 			props.title,
 			props.artist,
 			props.artwork,
+			props.artworkAlt,
 			props.album,
+			props.unknownTrackText,
 			props.autoplay,
 			props.singlePlay,
 			props.playOnSeek,

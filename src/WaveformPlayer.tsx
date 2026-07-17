@@ -112,6 +112,7 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.layout !== undefined) opts.layout = props.layout;
 	if (props.buttonStyle !== undefined) opts.buttonStyle = props.buttonStyle;
 	if (props.buttonSize !== undefined) opts.buttonSize = props.buttonSize;
+	if (props.buttonRadius !== undefined) opts.buttonRadius = props.buttonRadius;
 
 	/* Accessibility */
 	if (props.accessibleSeek !== undefined) opts.accessibleSeek = props.accessibleSeek;
@@ -132,6 +133,7 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.artist !== undefined) opts.artist = props.artist;
 	if (props.artwork !== undefined) opts.artwork = props.artwork;
 	if (props.artworkAlt !== undefined) opts.artworkAlt = props.artworkAlt;
+	if (props.artworkPosition !== undefined) opts.artworkPosition = props.artworkPosition;
 	if (props.album !== undefined) opts.album = props.album;
 	if (props.unknownTrackText !== undefined) opts.unknownTrackText = props.unknownTrackText;
 
@@ -317,6 +319,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.showBPM,
 			props.buttonAlign,
 			props.buttonSize,
+			props.buttonRadius,
 			props.accessibleSeek,
 			props.seekLabel,
 			props.seekValueText,
@@ -329,6 +332,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.artist,
 			props.artwork,
 			props.artworkAlt,
+			props.artworkPosition,
 			props.album,
 			props.unknownTrackText,
 			props.autoplay,

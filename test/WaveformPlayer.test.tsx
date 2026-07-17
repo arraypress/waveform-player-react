@@ -139,6 +139,38 @@ describe('<WaveformPlayer> — mount', () => {
 
 // ─── Option pass-through ─────────────────────────────────────────────────
 
+describe('<WaveformPlayer> — button radius + artwork placement', () => {
+	// These props type-check for free (WaveformPlayerProps derives from the
+	// core's WaveformPlayerOptions), but the options bag is hand-built — so a
+	// prop that isn't enumerated in buildLibraryOptions type-checks and then
+	// silently does nothing. That failure is invisible without these.
+	it('forwards buttonRadius, including 0', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" buttonRadius={0} />);
+		await waitForMount();
+		expect(ctorCalls[0].opts.buttonRadius).toBe(0);
+	});
+
+	it('forwards a buttonRadius unit string', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" buttonRadius="0.5rem" />);
+		await waitForMount();
+		expect(ctorCalls[0].opts.buttonRadius).toBe('0.5rem');
+	});
+
+	it('forwards artworkPosition', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" artwork="/c.jpg" artworkPosition="button" />);
+		await waitForMount();
+		expect(ctorCalls[0].opts.artworkPosition).toBe('button');
+	});
+
+	it('omits both when unset, so the core defaults apply', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" />);
+		await waitForMount();
+		const { opts } = ctorCalls[0];
+		expect('buttonRadius' in opts).toBe(false);
+		expect('artworkPosition' in opts).toBe(false);
+	});
+});
+
 describe('<WaveformPlayer> — option pass-through', () => {
 	it('forwards every primitive prop into the library options bag', async () => {
 		render(

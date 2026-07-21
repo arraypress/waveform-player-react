@@ -178,6 +178,7 @@ describe('<WaveformPlayer> — option pass-through', () => {
 				url="/audio/a.mp3"
 				audioMode="external"
 				preload="none"
+				crossOrigin="anonymous"
 				waveformStyle="bars"
 				height={80}
 				samples={250}
@@ -205,6 +206,7 @@ describe('<WaveformPlayer> — option pass-through', () => {
 
 		expect(opts.audioMode).toBe('external');
 		expect(opts.preload).toBe('none');
+		expect(opts.crossOrigin).toBe('anonymous');
 		expect(opts.waveformStyle).toBe('bars');
 		expect(opts.height).toBe(80);
 		expect(opts.samples).toBe(250);

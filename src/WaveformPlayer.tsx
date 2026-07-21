@@ -79,6 +79,7 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	else if (props.src !== undefined) opts.url = props.src;
 	if (props.audioMode !== undefined) opts.audioMode = props.audioMode;
 	if (props.preload !== undefined) opts.preload = props.preload;
+	if (props.crossOrigin !== undefined) opts.crossOrigin = props.crossOrigin;
 
 	/* Waveform visualisation */
 	if (props.waveformStyle !== undefined) opts.waveformStyle = props.waveformStyle;
@@ -299,6 +300,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.src,
 			props.audioMode,
 			props.preload,
+			props.crossOrigin,
 			props.waveformStyle,
 			props.height,
 			props.samples,

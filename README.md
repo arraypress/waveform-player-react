@@ -20,6 +20,11 @@ Typed props for every option, an imperative ref handle, and SSR-safe dynamic loa
 npm install @arraypress/waveform-player-react @arraypress/waveform-player react
 ```
 
+> **Requires `@arraypress/waveform-player` 1.27.0 or newer.** The component
+> loads the core library's `/no-autoinit` entry point, so that it never scans
+> the page for markup it doesn't own — that subpath was added in 1.27.0. If
+> you're upgrading this package on its own, bump the core alongside it.
+
 Import the core CSS once in your app entry, then render the component:
 
 ```tsx

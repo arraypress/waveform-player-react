@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-09-22
+
+### Changed
+
+- **Loads `@arraypress/waveform-player/no-autoinit` instead of the package
+  root.** Importing the root scans the whole document for
+  `[data-waveform-player]` markup and builds a player for every match. This
+  component constructs its own player on its own ref and wants none of that.
+  In a pure React app the scan found nothing and merely cost a
+  `querySelectorAll`; as an island on a page that *does* carry such markup — a
+  CMS page, a WordPress template, an Astro or Rails view — mounting this
+  component silently mounted players the React tree never asked for, and owned
+  them for the rest of the page's life. Same class, same options, same
+  behaviour for everything this component builds; the only thing that changes
+  is that nothing else on the page gets touched.
+
+### Breaking
+
+- **Peer floor raised to `@arraypress/waveform-player@^1.27.0`**, the release
+  that added the `/no-autoinit` entry point. This is the first hard floor in
+  the family rather than the usual soft one: on an older core the subpath does
+  not exist, so it fails at mount, in the browser. Bump the core alongside this
+  package.
+
 ## [0.7.0] — 2026-07-22
 
 ### Added

@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Changing `layout`, `buttonStyle` or `bpm` at runtime now remounts the
   player.** They were forwarded on first mount but missing from the remount
   `useEffect` deps, so later changes did nothing.
+- **`WaveformPlayerHandle.setPlaybackRate` documents the real range** —
+  `0.25..4`, what the core clamps to — instead of `0.5..2`.
 
 ## [0.8.0] — 2026-09-22
 

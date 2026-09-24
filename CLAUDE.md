@@ -17,6 +17,11 @@ Skip (1) and the option never reaches the player. Skip (2) and it works on first
 render but **changing it at runtime does nothing** — the player never remounts.
 The second failure is the one that survives a shallow test.
 
+`test/forwarding-drift.test.tsx` enumerates the installed core's option surface
+and fails on either miss. A deliberately unforwarded option goes in its
+`NOT_FORWARDED` map with a reason; a new option with a `null` default needs a
+sample value in `test/core-options.ts` (the test says so).
+
 ## Conventions
 - Prop **types** derive from core's `WaveformPlayerOptions` via `Omit<>` — never
   re-declare the option surface. Type inheritance forwards nothing at runtime;

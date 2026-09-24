@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Forwarding-drift test.** `test/forwarding-drift.test.tsx` enumerates the
+  installed core's option surface (`DEFAULT_OPTIONS` plus the
+  `WaveformPlayerOptions` keys) and fails for any option that isn't forwarded,
+  doesn't remount on change, or isn't listed in `NOT_FORWARDED` with a reason —
+  so the next core option can't be dropped the way the ones above were.
+  Test-only; adds `@types/node` as a dev dependency.
+
 ### Fixed
 
 - **`waveformGradient` and `seekHandle` now reach the player.** Both have been

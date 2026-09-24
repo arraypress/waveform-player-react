@@ -88,6 +88,7 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.barWidth !== undefined) opts.barWidth = props.barWidth;
 	if (props.barSpacing !== undefined) opts.barSpacing = props.barSpacing;
 	if (props.barRadius !== undefined) opts.barRadius = props.barRadius;
+	if (props.waveformGradient !== undefined) opts.waveformGradient = props.waveformGradient;
 	if (props.waveform !== undefined && props.waveform !== null) {
 		opts.waveform = props.waveform;
 	}
@@ -107,6 +108,7 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 	if (props.showInfo !== undefined) opts.showInfo = props.showInfo;
 	if (props.showTime !== undefined) opts.showTime = props.showTime;
 	if (props.showHoverTime !== undefined) opts.showHoverTime = props.showHoverTime;
+	if (props.seekHandle !== undefined) opts.seekHandle = props.seekHandle;
 	if (props.showBPM !== undefined) opts.showBPM = props.showBPM;
 	if (props.bpm !== undefined) opts.bpm = props.bpm;
 	if (props.buttonAlign !== undefined) opts.buttonAlign = props.buttonAlign;
@@ -193,7 +195,14 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 		const callbacksRef = useRef<
 			Pick<
 				WaveformPlayerProps,
-				'onLoad' | 'onPlay' | 'onPause' | 'onEnd' | 'onTimeUpdate' | 'onError'
+				| 'onLoad'
+				| 'onPlay'
+				| 'onPause'
+				| 'onEnd'
+				| 'onTimeUpdate'
+				| 'onError'
+				| 'onNextTrack'
+				| 'onPreviousTrack'
 			>
 		>({
 			onLoad: props.onLoad,
@@ -202,6 +211,8 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			onEnd: props.onEnd,
 			onTimeUpdate: props.onTimeUpdate,
 			onError: props.onError,
+			onNextTrack: props.onNextTrack,
+			onPreviousTrack: props.onPreviousTrack,
 		});
 
 		/* Refresh the ref on every render (before paint) so the stable
@@ -214,8 +225,22 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 				onEnd: props.onEnd,
 				onTimeUpdate: props.onTimeUpdate,
 				onError: props.onError,
+				onNextTrack: props.onNextTrack,
+				onPreviousTrack: props.onPreviousTrack,
 			};
 		});
+
+		/**
+		 * Whether a track-navigation handler is supplied. Unlike the other
+		 * callbacks these can't be wired unconditionally: the core registers
+		 * the Media Session `nexttrack` / `previoustrack` action (the
+		 * lock-screen skip buttons) whenever the option is a function, so an
+		 * always-on wrapper would show buttons that do nothing. Presence is
+		 * therefore read at construction and is a remount dep; the handler's
+		 * *identity* still isn't, so fresh inline functions don't churn.
+		 */
+		const hasNextTrack = typeof props.onNextTrack === 'function';
+		const hasPreviousTrack = typeof props.onPreviousTrack === 'function';
 
 		/**
 		 * Mount / re-mount lifecycle.
@@ -279,6 +304,14 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 						callbacksRef.current.onTimeUpdate?.(currentTime, duration, instance);
 					opts.onError = (error: Error, instance: WaveformPlayerInstance) =>
 						callbacksRef.current.onError?.(error, instance);
+					if (hasNextTrack) {
+						opts.onNextTrack = (instance: WaveformPlayerInstance) =>
+							callbacksRef.current.onNextTrack?.(instance);
+					}
+					if (hasPreviousTrack) {
+						opts.onPreviousTrack = (instance: WaveformPlayerInstance) =>
+							callbacksRef.current.onPreviousTrack?.(instance);
+					}
 
 					localInstance = new WaveformPlayerClass(container, opts);
 					instanceRef.current = localInstance;
@@ -303,7 +336,10 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			 * than spread to make the intent explicit and to keep the
 			 * lint rule happy. Callbacks intentionally NOT in deps:
 			 * a parent re-rendering with a fresh inline function
-			 * shouldn't tear the player down. */
+			 * shouldn't tear the player down — only the *presence* of the
+			 * track-navigation handlers is (see `hasNextTrack`).
+			 * test/forwarding-drift.test.tsx fails if a forwarded option
+			 * is missing here. */
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		}, [
 			props.url,
@@ -317,6 +353,7 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.barWidth,
 			props.barSpacing,
 			props.barRadius,
+			props.waveformGradient,
 			props.waveform,
 			props.colorPreset,
 			props.waveformColor,
@@ -328,8 +365,12 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.showInfo,
 			props.showTime,
 			props.showHoverTime,
+			props.seekHandle,
 			props.showBPM,
+			props.bpm,
 			props.buttonAlign,
+			props.layout,
+			props.buttonStyle,
 			props.buttonSize,
 			props.buttonRadius,
 			props.accessibleSeek,
@@ -353,6 +394,8 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			props.enableMediaSession,
 			props.playIcon,
 			props.pauseIcon,
+			hasNextTrack,
+			hasPreviousTrack,
 		]);
 
 		/**

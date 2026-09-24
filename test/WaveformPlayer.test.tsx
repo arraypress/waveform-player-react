@@ -185,6 +185,73 @@ describe('<WaveformPlayer> — button radius + artwork placement', () => {
 	});
 });
 
+describe('<WaveformPlayer> — waveform gradient + seek handle', () => {
+	// Typed via the core's WaveformPlayerOptions since core 1.17/1.18, but
+	// never enumerated in buildLibraryOptions — so both were silently dropped.
+	it('forwards waveformGradient and seekHandle (including false)', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" waveformGradient="horizontal" seekHandle={false} />);
+		await waitForMount();
+		expect(ctorCalls[0].opts.waveformGradient).toBe('horizontal');
+		expect(ctorCalls[0].opts.seekHandle).toBe(false);
+	});
+
+	it('omits both when unset, so the core defaults apply', async () => {
+		render(<WaveformPlayer url="/audio/a.mp3" />);
+		await waitForMount();
+		expect('waveformGradient' in ctorCalls[0].opts).toBe(false);
+		expect('seekHandle' in ctorCalls[0].opts).toBe(false);
+	});
+});
+
+describe('<WaveformPlayer> — Media Session track navigation', () => {
+	it('forwards onNextTrack / onPreviousTrack as wrappers that reach the current handler', async () => {
+		const onNextTrack = vi.fn();
+		const onPreviousTrack = vi.fn();
+		render(
+			<WaveformPlayer url="/audio/a.mp3" onNextTrack={onNextTrack} onPreviousTrack={onPreviousTrack} />
+		);
+		await waitForMount();
+		const { opts, stub } = ctorCalls[0];
+
+		expect(typeof opts.onNextTrack).toBe('function');
+		expect(typeof opts.onPreviousTrack).toBe('function');
+		(opts.onNextTrack as (i: unknown) => void)(stub);
+		(opts.onPreviousTrack as (i: unknown) => void)(stub);
+		expect(onNextTrack).toHaveBeenCalledWith(stub);
+		expect(onPreviousTrack).toHaveBeenCalledWith(stub);
+	});
+
+	it('omits them when no handler is given, so no dead lock-screen buttons appear', async () => {
+		// The core registers the nexttrack/previoustrack Media Session action
+		// whenever the option is a function — an always-on wrapper would show
+		// skip buttons that do nothing.
+		render(<WaveformPlayer url="/audio/a.mp3" />);
+		await waitForMount();
+		expect('onNextTrack' in ctorCalls[0].opts).toBe(false);
+		expect('onPreviousTrack' in ctorCalls[0].opts).toBe(false);
+	});
+
+	it('routes to the latest handler without remounting, but remounts when one is added', async () => {
+		const next1 = vi.fn();
+		const { rerender } = render(<WaveformPlayer url="/audio/a.mp3" onNextTrack={next1} />);
+		await waitForMount();
+
+		const next2 = vi.fn();
+		rerender(<WaveformPlayer url="/audio/a.mp3" onNextTrack={next2} />);
+		await new Promise<void>((resolve) => setTimeout(resolve, 50));
+		expect(ctorCalls).toHaveLength(1);
+		(ctorCalls[0].opts.onNextTrack as (i: unknown) => void)(ctorCalls[0].stub);
+		expect(next2).toHaveBeenCalledTimes(1);
+		expect(next1).not.toHaveBeenCalled();
+
+		// Presence is read once at construction (that's when the core
+		// registers the action), so gaining a handler must remount.
+		rerender(<WaveformPlayer url="/audio/a.mp3" onNextTrack={next2} onPreviousTrack={vi.fn()} />);
+		await waitForMount(2);
+		expect(typeof ctorCalls[1].opts.onPreviousTrack).toBe('function');
+	});
+});
+
 describe('<WaveformPlayer> — option pass-through', () => {
 	it('forwards every primitive prop into the library options bag', async () => {
 		render(
@@ -387,6 +454,21 @@ describe('<WaveformPlayer> — lifecycle', () => {
 
 		expect(ctorCalls).toHaveLength(2);
 		expect(ctorCalls[1].opts.waveformStyle).toBe('line');
+	});
+
+	it.each([
+		['layout', 'preview', 'default'],
+		['buttonStyle', 'minimal', 'circle'],
+		['bpm', 120, 128],
+	] as const)('re-mounts when %s changes (was forwarded but missing from deps)', async (key, a, b) => {
+		const { rerender } = render(<WaveformPlayer url="/audio/a.mp3" {...{ [key]: a }} />);
+		await waitForMount();
+
+		rerender(<WaveformPlayer url="/audio/a.mp3" {...{ [key]: b }} />);
+		await waitForMount(2);
+
+		expect(ctorCalls).toHaveLength(2);
+		expect(ctorCalls[1].opts[key]).toBe(b);
 	});
 
 	it('does NOT re-mount when only callback props change (callback churn protection)', async () => {

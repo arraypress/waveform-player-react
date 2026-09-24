@@ -14,8 +14,9 @@
  * This module only adds the React-specific surface:
  *
  *   - Callback props (`onLoad`, `onPlay`, `onPause`, `onTimeUpdate`,
- *     `onEnd`, `onError`) that map to the library's same-named option
- *     fields but receive the typed `WaveformPlayer` instance.
+ *     `onEnd`, `onError`, `onNextTrack`, `onPreviousTrack`) that map to
+ *     the library's same-named option fields but receive the typed
+ *     `WaveformPlayer` instance.
  *   - DOM pass-through (`className`, `style`, `id`).
  *   - A `WaveformPlayerHandle` exposed via `ref` for imperative
  *     control (`loadTrack`, `seekTo`, `setVolume`, etc.).
@@ -116,7 +117,16 @@ export interface WaveformPlayerHandle {
 export interface WaveformPlayerProps
 	extends Omit<
 		WaveformPlayerOptions,
-		'url' | 'style' | 'onLoad' | 'onPlay' | 'onPause' | 'onEnd' | 'onError' | 'onTimeUpdate'
+		| 'url'
+		| 'style'
+		| 'onLoad'
+		| 'onPlay'
+		| 'onPause'
+		| 'onEnd'
+		| 'onError'
+		| 'onTimeUpdate'
+		| 'onNextTrack'
+		| 'onPreviousTrack'
 	> {
 	// ── Audio source ───────────────────────────────────────────────────
 
@@ -146,6 +156,14 @@ export interface WaveformPlayerProps
 	onTimeUpdate?: (currentTime: number, duration: number, instance: WaveformPlayer) => void;
 	/** Called on audio load / playback error. */
 	onError?: (error: Error, instance: WaveformPlayer) => void;
+	/**
+	 * Media Session "next track" handler. Supplying it shows the lock-screen /
+	 * system-media-controls skip-forward button; omit it and the button stays
+	 * hidden. Self-mode with `enableMediaSession` only.
+	 */
+	onNextTrack?: (instance: WaveformPlayer) => void;
+	/** Media Session "previous track" handler — the skip-back counterpart of `onNextTrack`. */
+	onPreviousTrack?: (instance: WaveformPlayer) => void;
 
 	// ── React-specific extras ──────────────────────────────────────────
 

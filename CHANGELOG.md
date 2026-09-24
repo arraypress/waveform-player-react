@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`waveformGradient` and `seekHandle` now reach the player.** Both have been
+  typed props since the core added them (1.18.0 / 1.17.0), because the props
+  derive from `WaveformPlayerOptions` — but `buildLibraryOptions` is a
+  hand-written allowlist that never listed them, so they type-checked and were
+  silently dropped.
+- **`onNextTrack` / `onPreviousTrack` now reach the player**, so the lock-screen
+  / system media controls show skip buttons when you supply them. They were
+  typed but never forwarded. They're passed only when set: the core registers
+  the Media Session action whenever the option is a function, so an
+  unconditional wrapper would show buttons that do nothing. Like the other
+  callbacks they're routed through a ref — a fresh inline handler doesn't
+  remount — but adding or removing one does, since the core reads it at
+  construction.
+- **Changing `layout`, `buttonStyle` or `bpm` at runtime now remounts the
+  player.** They were forwarded on first mount but missing from the remount
+  `useEffect` deps, so later changes did nothing.
+
 ## [0.8.0] — 2026-09-22
 
 ### Changed

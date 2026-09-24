@@ -55,6 +55,7 @@ import {
 	useImperativeHandle,
 	useLayoutEffect,
 	useRef,
+	useState,
 	type ForwardedRef,
 } from 'react';
 // Aliased to avoid colliding with this file's own `WaveformPlayer`
@@ -161,6 +162,35 @@ function buildLibraryOptions(props: WaveformPlayerProps): Record<string, unknown
 }
 
 /**
+ * Split a class string into its tokens (empty strings dropped).
+ *
+ * @param value - A space-separated class list.
+ * @returns The individual class names.
+ */
+function classTokens(value: string): string[] {
+	return value.split(/\s+/).filter(Boolean);
+}
+
+/**
+ * Bring the host's *user* classes (`wfp-host` + `className`) up to date
+ * without touching anything else on the element: drop the tokens this
+ * component applied last time that are no longer wanted, then (re-)add
+ * every wanted token. `classList.add` is idempotent, so this is also how
+ * the tokens come back after the core's `createDOM()` resets the host's
+ * whole class list to `waveform-player` on construction.
+ *
+ * @param el - The host element.
+ * @param applied - Tokens this component applied on the previous sync.
+ * @param wanted - Tokens it wants now.
+ */
+function syncHostClasses(el: HTMLElement, applied: readonly string[], wanted: readonly string[]): void {
+	for (const token of applied) {
+		if (!wanted.includes(token)) el.classList.remove(token);
+	}
+	if (wanted.length) el.classList.add(...wanted);
+}
+
+/**
  * `WaveformPlayer` — React component wrapping
  * `@arraypress/waveform-player`.
  *
@@ -181,6 +211,45 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 	function WaveformPlayer(props, ref: ForwardedRef<WaveformPlayerHandle>) {
 		const containerRef = useRef<HTMLDivElement | null>(null);
 		const instanceRef = useRef<unknown>(null);
+
+		/**
+		 * Host `class` handling.
+		 *
+		 * The core owns part of the host's class list: `createDOM()` resets it
+		 * to `waveform-player` (+ `waveform-layout-preview`,
+		 * `waveform-theme-light`) and later paths toggle
+		 * `waveform-is-placeholder`. If React owned the `class` attribute, a
+		 * `className`-only change — which rightly doesn't remount — would
+		 * rewrite it and strip those classes for good.
+		 *
+		 * So React renders the class **once**: `renderedClass` is frozen at the
+		 * first render (server markup and hydration still carry the user's
+		 * classes), and because the value never changes React never writes the
+		 * attribute again. Later `className` changes are applied here with
+		 * `classList`, touching only the tokens this component put there.
+		 *
+		 * Chosen over mounting the core into an inner element (which would
+		 * leave React's element alone by construction) because that changes the
+		 * DOM users style: `style={{ '--wfp-accent': … }}` or a `className`
+		 * setting the `--wfp-*` variables would land on a parent, where the
+		 * core's own `.waveform-player { --wfp-…: … }` defaults shadow them.
+		 */
+		const hostClass = ['wfp-host', props.className].filter(Boolean).join(' ');
+		const [renderedClass] = useState(hostClass);
+		const hostClassRef = useRef(hostClass);
+		hostClassRef.current = hostClass;
+		const appliedClassesRef = useRef<string[]>(classTokens(renderedClass));
+
+		/** Apply the latest `hostClass` to the host (see above). */
+		const applyHostClasses = () => {
+			const el = containerRef.current;
+			if (!el) return;
+			const wanted = classTokens(hostClassRef.current);
+			syncHostClasses(el, appliedClassesRef.current, wanted);
+			appliedClassesRef.current = wanted;
+		};
+
+		useLayoutEffect(applyHostClasses, [hostClass]);
 
 		/**
 		 * Latest user callbacks, kept in a ref so the wrappers handed to
@@ -315,6 +384,9 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 
 					localInstance = new WaveformPlayerClass(container, opts);
 					instanceRef.current = localInstance;
+					/* createDOM() just replaced the host's class list with the
+					 * core's own; put `wfp-host` + `className` back beside it. */
+					applyHostClasses();
 				})
 				.catch((err) => {
 					console.error('[WaveformPlayerReact] Failed to load library:', err);
@@ -468,7 +540,8 @@ export const WaveformPlayer = forwardRef<WaveformPlayerHandle, WaveformPlayerPro
 			<div
 				ref={containerRef}
 				id={props.id}
-				className={['wfp-host', props.className].filter(Boolean).join(' ')}
+				/* Frozen at first render — see "Host `class` handling". */
+				className={renderedClass}
 				style={props.style}
 			/>
 		);

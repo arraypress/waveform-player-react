@@ -49,6 +49,14 @@ const makeStub = () => {
 const ctorCalls: Array<{ el: HTMLElement; opts: Record<string, unknown>; stub: ReturnType<typeof makeStub> }> = [];
 
 /**
+ * Optional per-test side effect the mocked constructor runs on the host,
+ * for tests that need the core's DOM behaviour — e.g. the real
+ * `createDOM()` replacing the host's whole class list with
+ * `waveform-player`. Reset before every test.
+ */
+let onConstruct: ((el: HTMLElement) => void) | null = null;
+
+/**
  * The package root must never be imported: it scans the whole document on
  * import and mounts a player for every `[data-waveform-player]` it finds, which
  * is markup this React tree does not own. A mock factory only runs when its module is
@@ -66,6 +74,7 @@ vi.mock('@arraypress/waveform-player/no-autoinit', () => {
 	const WaveformPlayerCtor = vi.fn(function (this: unknown, el: HTMLElement, opts: Record<string, unknown>) {
 		const stub = makeStub();
 		ctorCalls.push({ el, opts, stub });
+		onConstruct?.(el);
 		// Mutate `this` so the `new` call sees the stub's methods.
 		Object.assign(this as object, stub);
 	}) as unknown as new (el: HTMLElement, opts: Record<string, unknown>) => unknown;
@@ -78,6 +87,7 @@ vi.mock('@arraypress/waveform-player/no-autoinit', () => {
 
 beforeEach(() => {
 	ctorCalls.length = 0;
+	onConstruct = null;
 	cleanup();
 });
 
@@ -486,6 +496,64 @@ describe('<WaveformPlayer> — lifecycle', () => {
 		// Still only one ctor call — passing a new inline callback
 		// on a parent re-render must not tear the player down.
 		expect(ctorCalls).toHaveLength(1);
+	});
+});
+
+// ─── Host classes owned by the core ─────────────────────────────────────
+
+describe('<WaveformPlayer> — className changes keep the core\'s host classes', () => {
+	/* The core writes its own classes onto the host: createDOM() resets the
+	 * whole list to `waveform-player` (+ `waveform-layout-preview`,
+	 * `waveform-theme-light`), and load/error paths toggle
+	 * `waveform-is-placeholder` later. A className-only change doesn't
+	 * remount, so if React rewrote the `class` attribute those would be gone
+	 * for good — an unstyled player until some other prop happened to change. */
+	it('keeps the core-added classes when only className changes', async () => {
+		onConstruct = (el) => {
+			el.className = 'waveform-player';
+			el.classList.add('waveform-layout-preview');
+		};
+		const { container, rerender } = render(<WaveformPlayer url="/audio/a.mp3" className="first" />);
+		await waitForMount();
+		const host = container.querySelector('div')!;
+		host.classList.add('waveform-is-placeholder'); // a later, post-construction toggle
+
+		rerender(<WaveformPlayer url="/audio/a.mp3" className="second" />);
+		await new Promise<void>((resolve) => setTimeout(resolve, 50));
+
+		expect(ctorCalls).toHaveLength(1); // no remount to paper over it
+		expect(host.classList.contains('waveform-player')).toBe(true);
+		expect(host.classList.contains('waveform-layout-preview')).toBe(true);
+		expect(host.classList.contains('waveform-is-placeholder')).toBe(true);
+		expect(host.classList.contains('wfp-host')).toBe(true);
+		expect(host.classList.contains('second')).toBe(true);
+		expect(host.classList.contains('first')).toBe(false);
+	});
+
+	it('re-applies className and wfp-host after the core resets the class list on construction', async () => {
+		onConstruct = (el) => {
+			el.className = 'waveform-player';
+		};
+		const { container } = render(<WaveformPlayer url="/audio/a.mp3" className="mine" />);
+		await waitForMount();
+		const host = container.querySelector('div')!;
+
+		expect(host.classList.contains('waveform-player')).toBe(true);
+		expect(host.classList.contains('wfp-host')).toBe(true);
+		expect(host.classList.contains('mine')).toBe(true);
+	});
+
+	it('removing className drops only the user class', async () => {
+		const { container, rerender } = render(<WaveformPlayer url="/audio/a.mp3" className="a b" />);
+		await waitForMount();
+		const host = container.querySelector('div')!;
+		host.classList.add('waveform-player');
+
+		rerender(<WaveformPlayer url="/audio/a.mp3" className="b" />);
+		expect(host.className.split(' ').sort()).toEqual(['b', 'waveform-player', 'wfp-host']);
+
+		rerender(<WaveformPlayer url="/audio/a.mp3" />);
+		expect(host.className.split(' ').sort()).toEqual(['waveform-player', 'wfp-host']);
 	});
 });
 

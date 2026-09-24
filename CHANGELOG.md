@@ -34,6 +34,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Changing `layout`, `buttonStyle` or `bpm` at runtime now remounts the
   player.** They were forwarded on first mount but missing from the remount
   `useEffect` deps, so later changes did nothing.
+- **Changing only `className` no longer strips the player's own classes.**
+  The core writes classes onto the host — `waveform-player`,
+  `waveform-layout-preview`, `waveform-theme-light`,
+  `waveform-is-placeholder` — and a `className`-only change (correctly) doesn't
+  remount, so when React rewrote the `class` attribute those were gone until
+  some other prop happened to change, leaving an unstyled player. React now
+  renders `class` once (so server markup and hydration are unchanged) and later
+  `className` changes are applied with `classList`, adding and removing only
+  the user's tokens.
+- **`className` and `wfp-host` survive mount.** The core's `createDOM()`
+  replaces the host's whole class list with `waveform-player`, so both were
+  silently dropped as soon as the player built — `className` only ever styled
+  the pre-mount placeholder. They're re-applied right after construction.
+  The DOM structure is unchanged: still one host `<div>`, which is also the
+  `.waveform-player` root. (Mounting the core into an inner element was
+  considered and rejected: `--wfp-*` variables set through `style` or
+  `className` would then sit on a parent, shadowed by the core's own
+  `.waveform-player` defaults.)
 - **`WaveformPlayerHandle.setPlaybackRate` documents the real range** —
   `0.25..4`, what the core clamps to — instead of `0.5..2`.
 
